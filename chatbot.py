@@ -2,10 +2,13 @@ import streamlit as st
 from PyPDF2 import PdfReader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain.vectorstores import FAISS
 from langchain.chains.question_answering import load_qa_chain
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
+from langchain.embeddings import OpenAIEmbeddings
+from langchain.vectorstores import FAISS
+from langchain.llms import OpenAI
+from langchain.chains.retrieval_qa import load_qa_chain
 
 key_vault_name = "shivanikeys"
 vault_url = f"https://{key_vault_name}.vault.azure.net/"
@@ -60,10 +63,10 @@ if file is not None:
 
     # do similarity search
     if user_question:
-        docs = vectorstore.similarity_search(user_question)
+        match = vectorstore.similarity_search(user_question)
         #st.write(docs)  # Display the retrieved documents
-
+        
         #generate answer
-        # chain = load_qa_chain(OpenAI(temperature=0, openai_api_key=OPENAI_SECRET_KEY), chain_type="stuff")
-        # response = chain.run(input_documents=docs, question=user_question)
-        # st.write(response)  # Display the answer
+        chain = load_qa_chain(OpenAI(temperature=0, openai_api_key=OPENAI_SECRET_KEY), chain_type="stuff")
+        response = chain.run(input_documents=match, question=user_question)
+        st.write(response)  # Display the answer
